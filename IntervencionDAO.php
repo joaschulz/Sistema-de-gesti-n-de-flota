@@ -2,34 +2,40 @@
 require_once 'Conexion.php';
 
 class IntervencionDAO {
+    
+    // 1. LISTAR UNIDADES EN EL TABLERO KANBAN
     public function obtenerTodos() {
         $pdo = Conexion::conectar();
         
-        // Hacemos que la consulta SQL traduzca los nombres de tus columnas
-        // para que el JavaScript las entienda sin tener que modificarlo.
+        // Uso de Subquery y COALESCE para evitar duplicación de filas y garantizar Cohesión de Datos
         $sql = "SELECT v.patente, v.marca, v.modelo, v.kilometraje, v.novedades, 
                        IF(v.estado = 'Taller', 'En Taller', v.estado) as estado, 
-                       i.detalle as causa 
+                       COALESCE(
+                           (SELECT i.detalle FROM intervenciones i WHERE i.patente_vehiculo = v.patente ORDER BY i.id DESC LIMIT 1),
+                           v.novedades,
+                           'Falla o revisión general sin especificar'
+                       ) as causa 
                 FROM vehiculos v 
-                LEFT JOIN intervenciones i ON v.patente = i.patente_vehiculo 
                 ORDER BY v.estado ASC";
                 
         $stmt = $pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // 2. REGISTRAR INTERVENCIÓN / ENVIAR A TALLER
     public function enviarATaller($patente, $tipo, $detalle, $costo, $evidenciasStr) {
         $pdo = Conexion::conectar();
         try {
             $pdo->beginTransaction();
             
-            // 1. Actualizamos el estado del vehículo
+            // Transición de estado de la unidad
             $sql1 = "UPDATE vehiculos SET estado = 'Taller' WHERE patente = :patente";
             $stmt1 = $pdo->prepare($sql1);
             $stmt1->execute([':patente' => $patente]);
 
-            // 2. Insertamos la intervención INCLUYENDO EL COSTO
-            $sql2 = "INSERT INTO intervenciones (patente_vehiculo, tipo, costo, detalle, evidencias) VALUES (:patente, :tipo, :costo, :detalle, :evidencias)";
+            // Persistencia de la intervención histórica (No destructiva)
+            $sql2 = "INSERT INTO intervenciones (patente_vehiculo, tipo, costo, detalle, evidencias) 
+                     VALUES (:patente, :tipo, :costo, :detalle, :evidencias)";
             $stmt2 = $pdo->prepare($sql2);
             $stmt2->execute([
                 ':patente' => $patente, 
@@ -47,20 +53,16 @@ class IntervencionDAO {
         }
     }
 
+    // 3. DAR DE ALTA (Mantiene consistencia de pantalla y respeta el histórico de intervenciones)
     public function darDeAlta($patente) {
         $pdo = Conexion::conectar();
         try {
             $pdo->beginTransaction();
 
-            // 1. Volver a Operativo
-            $sql1 = "UPDATE vehiculos SET estado = 'Operativo' WHERE patente = :patente";
-            $stmt1 = $pdo->prepare($sql1);
-            $stmt1->execute([':patente' => $patente]);
-
-            // 2. Eliminar la intervención activa
-            $sql2 = "DELETE FROM intervenciones WHERE patente_vehiculo = :patente";
-            $stmt2 = $pdo->prepare($sql2);
-            $stmt2->execute([':patente' => $patente]);
+            // Limpiamos la novedad actual del vehículo para dejarlo libre en el Kanban
+            $sql = "UPDATE vehiculos SET estado = 'Operativo', novedades = NULL WHERE patente = :patente";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([':patente' => $patente]);
 
             $pdo->commit();
             return true;
