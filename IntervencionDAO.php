@@ -39,7 +39,6 @@ class IntervencionDAO {
         try {
             $pdo->beginTransaction();
             
-            // CORRECCIÓN: Solo pasamos a Taller. NO TOCAMOS "novedades", 
             // así el tablero sigue mostrando la causa original intacta.
             $sql1 = "UPDATE vehiculos SET estado = 'Taller' WHERE patente = :patente";
             $stmt1 = $pdo->prepare($sql1);
@@ -59,6 +58,7 @@ class IntervencionDAO {
 
             $pdo->commit();
             return true;
+
         } catch (Exception $e) {
             $pdo->rollBack();
             return false;

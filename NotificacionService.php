@@ -7,7 +7,7 @@ class NotificacionService {
     // ⚠️ COLOCÁ TU CHAT ID REAL DE RAWDATABOT ACÁ
     private static $telegramChatId = '';
     
-    private static $emailDestino = '';
+    private static $emailDestino = '@gmail.com';
 
     /**
      * Envía notificaciones estrictas de transición de estado
