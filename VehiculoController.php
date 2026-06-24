@@ -23,34 +23,73 @@ try {
             echo json_encode(["success" => $exito]);
             break;
 
+        // =======================================================
+        // ENVIAR A TALLER (Notifica Telegram SOLO si viene de Alerta)
+        // =======================================================
         case 'enviarATaller':
-            // 1. Detectar el tipo de paquete entrante (Polimorfismo de red)
-            $contentType = $_SERVER["CONTENT_TYPE"] ?? '';
+            require_once 'NotificacionService.php';
 
-            if (strpos($contentType, 'application/json') !== false) {
-                // A) Viene desde el botón amarillo "A Taller" (paquete JSON ligero)
+            $contentType = $_SERVER["CONTENT_TYPE"] ?? '';
+            $evidenciasNombres = [];
+            $esPeticionJson = strpos($contentType, 'application/json') !== false;
+
+            // 1. Extraemos la patente primero según el origen de la petición
+            if ($esPeticionJson) {
                 $data = json_decode(file_get_contents('php://input'), true);
                 $patente = $data['patente'] ?? null;
-                $detalle = $data['causa'] ?? 'Inspección solicitada desde tablero';
+            } else {
+                $patente = $_POST['patente'] ?? null;
+            }
+
+            if (empty($patente)) {
+                throw new Exception("Datos obligatorios incompletos (Falta patente).");
+            }
+
+            // 2. Consultamos la BD para traer el estado actual y sus NOVEDADES reales
+            $datosBD = method_exists($dao, 'obtenerDatosVehiculo') ? $dao->obtenerDatosVehiculo($patente) : null;
+            $estadoAnterior = $datosBD ? $datosBD['estado'] : 'Desconocido';
+            $novedadReal = $datosBD ? $datosBD['novedades'] : '';
+
+            // 3. Asignamos el detalle (motivo) dependiendo de cómo ingresó a taller
+            if ($esPeticionJson) {
+                // Si entra por el botón directo, el motivo ES la novedad de la base de datos
+                $detalle = !empty($novedadReal) ? $novedadReal : 'Inspección solicitada sin novedades previas';
                 $tipo = 'Preventivo';
                 $costo = 0.00;
                 $evidenciasStr = '';
             } else {
-                // B) Viene desde el Modal de Intervención (paquete Multipart pesado)
-                $evidenciasStr = procesarArchivosLocales($_FILES);
-                $patente = $_POST['patente'] ?? null;
+                // Si entra por el Modal, usa el texto y costo que el Jefe de Taller escribió
+                $evidenciasStr = procesarArchivosLocales($_FILES, $evidenciasNombres);
                 $tipo = $_POST['tipo'] ?? 'Correctivo';
                 $detalle = $_POST['detalle'] ?? '';
                 $costo = floatval($_POST['costo'] ?? 0);
             }
 
-            // 2. Validación centralizada
-            if (empty($patente) || empty($detalle)) {
-                throw new Exception("Datos obligatorios (patente o detalle) incompletos.");
+            if (empty($detalle)) {
+                throw new Exception("Datos obligatorios incompletos (Falta detalle/motivo).");
             }
 
-            // 3. Ejecución en la BD
+            // 4. Guardamos la intervención oficial en la BD
             $exito = $dao->enviarATaller($patente, $tipo, $detalle, $costo, $evidenciasStr);
+
+            // 5. EVENTOS EXTERNOS (Telegram / Email)
+            if ($exito) {
+                try {
+                    // TELEGRAM: Solo dispara si hay una TRANSICIÓN real (Evita el "Taller -> Taller")
+                    if ($estadoAnterior !== 'Taller') {
+                        NotificacionService::enviarAlertaTelegram($patente, $estadoAnterior, 'Taller', $detalle);
+                    }
+                    
+                    // EMAIL (SMTP): Solo dispara si es un registro de INTERVENCIÓN (Viene del Modal / Formulario pesado)
+                    if (!$esPeticionJson) {
+                        NotificacionService::enviarReporteEmail($patente, $tipo, $detalle, $costo, $evidenciasNombres);
+                    }
+                } catch (Exception $e) {
+                    // Si algo falla en la red externa, el servidor no colapsa
+                    error_log("Fallo en notificación externa: " . $e->getMessage());
+                }
+            }
+
             echo json_encode(["success" => $exito]);
             break;
 
