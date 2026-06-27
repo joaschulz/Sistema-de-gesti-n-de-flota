@@ -1,3 +1,7 @@
+<?php
+require_once 'config/Seguridad.php';
+Seguridad::protegerVista(['JefeTaller']); // Solo JefeTaller por ahora (MVP)
+?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -19,6 +23,13 @@
     <main class="max-w-[1300px] mx-auto">
         <header class="flex justify-between items-center mb-8">
             <h1 class="text-2xl font-bold text-gray-900">Gestion de Mantenimientos</h1>
+
+            <div class="flex items-center gap-4">
+                <span id="nombre-usuario-display" class="text-sm font-medium text-gray-700"></span>
+                <button id="btn-logout"
+                    class="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100 transition-colors">Cerrar
+                    Sesión</button>
+            </div>
         </header>
 
         <section class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
@@ -117,7 +128,7 @@
         </form>
     </dialog>
 
-    <script src="JefeTaller.js?v=1"></script>
+    <script src="assets/js/JefeTaller.js"></script>
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 <?php
-require_once 'IntervencionDAO.php';
+require_once '../dao/IntervencionDAO.php';
 
 // 1. CONFIGURACIÓN DE FRONTERA (Garantiza que siempre se responda en formato JSON)
 header('Content-Type: application/json; charset=utf-8');
@@ -27,7 +27,7 @@ try {
         // ENVIAR A TALLER (Notifica Telegram SOLO si viene de Alerta)
         // =======================================================
         case 'enviarATaller':
-            require_once 'NotificacionService.php';
+            require_once '../services/NotificacionService.php';
 
             $contentType = $_SERVER["CONTENT_TYPE"] ?? '';
             $evidenciasNombres = [];
@@ -105,11 +105,11 @@ try {
 }
 
 // 3. AISLAMIENTO DE INFRAESTRUCTURA (File System)
-function procesarArchivosLocales($archivosPeticion) {
+function procesarArchivosLocales($archivosPeticion, &$evidenciasNombres) {
     $evidenciasNombres = [];
     
     if (!empty($archivosPeticion['evidencias']['name'][0])) {
-        $directorioDestino = __DIR__ . '/uploads/';
+        $directorioDestino = __DIR__ . '/../assets/uploads/';
         
         if (!is_dir($directorioDestino)) {
             mkdir($directorioDestino, 0777, true);

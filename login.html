@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Gestión de Flota CELO</title>
+    <link rel="stylesheet" href="assets/css/index.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: 'var(--background)',
+                        foreground: 'var(--foreground)',
+                        card: 'var(--card)',
+                        primary: 'var(--primary)',
+                        'primary-foreground': 'var(--primary-foreground)',
+                        muted: 'var(--muted)',
+                        'muted-foreground': 'var(--muted-foreground)',
+                        border: 'var(--border)',
+                        'input-background': 'var(--input-background)',
+                        ring: 'var(--ring)'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-background flex items-center justify-center min-h-screen p-4 font-sans text-foreground">
+    <div class="bg-card w-full max-w-sm p-8 rounded-lg shadow-lg border border-border">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-medium mb-1">Iniciar Sesión</h1>
+            <p class="text-muted-foreground text-sm">Ingresa tus credenciales para continuar</p>
+        </div>
+
+        <div id="mensaje-error"
+            class="hidden bg-red-50 text-red-600 border border-red-200 p-3 rounded-md text-sm mb-6 font-medium text-center">
+        </div>
+
+        <form id="form-login" class="space-y-5">
+            <div>
+                <label for="usuario" class="block text-sm font-medium mb-1.5">Usuario</label>
+                <input type="text" id="usuario" required
+                    class="w-full px-4 py-2.5 bg-input-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                    placeholder="ej: admin">
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium mb-1.5">Contraseña</label>
+                <input type="password" id="password" required
+                    class="w-full px-4 py-2.5 bg-input-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                    placeholder="••••••••">
+            </div>
+            <button type="submit" id="btn-submit"
+                class="w-full bg-primary text-primary-foreground py-2.5 rounded-md font-medium hover:opacity-90 transition-all mt-4 cursor-pointer">
+                Ingresar al Tablero
+            </button>
+        </form>
+    </div>
+    <script src="assets/js/login.js"></script>
+</body>
+
+</html>

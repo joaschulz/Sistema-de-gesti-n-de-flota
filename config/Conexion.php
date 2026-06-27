@@ -4,7 +4,7 @@ class Conexion {
         $host = 'localhost';
         $db   = 'celo_fleet';
         $user = 'root';
-        $pass = '';
+        $pass = 'admin';
         $port = '3306'; 
         
         $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=utf8mb4";

@@ -1,3 +1,52 @@
+// ==========================================================
+// CONTROL DE FRONTERA Y SESIÓN (Desacoplamiento Total de Vistas)
+// ==========================================================
+async function verificarSesion() {
+    try {
+        const res = await fetch("controllers/LoginController.php?accion=verificar");
+        const data = await res.json();
+
+        // 1. Si la sesión expiró o se cerró, lo sacamos
+        if (!data.autenticado) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        // 2. Pintamos los datos del usuario en la interfaz
+        const userDisplay = document.getElementById("nombre-usuario-display");
+        if (userDisplay) {
+            userDisplay.textContent = `Bienvenido, ${data.usuario} (${data.rol})`;
+        }
+
+        const pantalla = document.getElementById("pantalla-principal");
+        if (pantalla) {
+            pantalla.classList.remove("hidden");
+        }
+
+        // Carga normal del tablero Kanban
+        cargarTablero();
+    } catch (err) {
+        console.error("Error en la comprobación de sesión:", err);
+        window.location.href = "login.html";
+    }
+}
+
+// Vinculación del evento Logout
+document.getElementById("btn-logout")?.addEventListener("click", async () => {
+    try {
+        const res = await fetch("controllers/LoginController.php?accion=logout");
+        const data = await res.json();
+        if (data.success) {
+            window.location.href = "login.html";
+        }
+    } catch (err) {
+        console.error("Error al cerrar sesión:", err);
+    }
+});
+
+// Inicializador Único
+document.addEventListener("DOMContentLoaded", verificarSesion);
+
 // Componente de Estado Aislado (Mínimo acoplamiento de variables de entorno)
 let patenteSeleccionada = "";
 let archivosSeleccionados = [];
@@ -11,7 +60,7 @@ window.addEventListener("drop", e => e.preventDefault(), false);
 // ==========================================
 async function cargarTablero() {
     try {
-        const respuesta = await fetch("VehiculoController.php?accion=listar");
+        const respuesta = await fetch("controllers/VehiculoController.php?accion=listar");
         const vehiculos = await respuesta.json();
 
         // Resolución dinámica y diferida de elementos para evitar acoplamiento temporal con el DOM
@@ -94,7 +143,7 @@ function actualizarContadores() {
 // ==========================================
 async function procesarAccion(patente, endpoint, causa = "") {
     try {
-        await fetch(`VehiculoController.php?accion=${endpoint}`, {
+        await fetch(`controllers/VehiculoController.php?accion=${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ patente, causa })
@@ -265,7 +314,7 @@ async function ejecutarEnvioFormulario(e) {
     }
 
     try {
-        await fetch("VehiculoController.php?accion=enviarATaller", { method: 'POST', body: data });
+        await fetch("controllers/VehiculoController.php?accion=enviarATaller", { method: 'POST', body: data });
         form.reset();
         archivosSeleccionados = [];
         actualizarPreview();

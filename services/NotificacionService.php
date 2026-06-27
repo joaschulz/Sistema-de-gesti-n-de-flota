@@ -1,4 +1,10 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+require_once __DIR__ . '/../vendor/src/Exception.php';
+require_once __DIR__ . '/../vendor/src/PHPMailer.php';
+require_once __DIR__ . '/../vendor/src/SMTP.php';
+
 class NotificacionService {
     
     // ⚠️ COLOCÁ TU TOKEN REAL DE BOTFAHER ACÁ
@@ -7,7 +13,7 @@ class NotificacionService {
     // ⚠️ COLOCÁ TU CHAT ID REAL DE RAWDATABOT ACÁ
     private static $telegramChatId = '';
     
-    private static $emailDestino = '@gmail.com';
+    private static $emailDestino = '';
 
     /**
      * Envía notificaciones estrictas de transición de estado
@@ -50,16 +56,47 @@ class NotificacionService {
         if (!empty($evidenciasNombres)) {
             $mensajeHtml .= "<h3>Evidencias Adjuntas:</h3><ul>";
             foreach ($evidenciasNombres as $archivo) {
-                $urlArchivo = "http://localhost/gestion-flota/uploads/" . $archivo;
+                $urlArchivo = "http://localhost/gestion-flota/assets/uploads/" . $archivo;
                 $mensajeHtml .= "<li><a href='" . $urlArchivo . "'>Ver " . $archivo . "</a></li>";
             }
             $mensajeHtml .= "</ul>";
         }
 
-        $headers  = "MIME-Version: 1.0\r\n";
-        $headers .= "Content-type: text/html; charset=UTF-8\r\n";
-        $headers .= "From: Sistema CELO Fleet <no-reply@celo.com>\r\n";
+        $mail = new PHPMailer(true);
 
-        @mail(self::$emailDestino, $asunto, $mensajeHtml, $headers);
+        try {
+            // Configuración del servidor SMTP (Ajustar con credenciales reales)
+            $mail->isSMTP();
+            $mail->Host       = 'smtp.gmail.com';                     // Servidor SMTP (ej: smtp.gmail.com)
+            $mail->SMTPAuth   = true;                                 // Habilitar autenticación SMTP
+            $mail->Username   = '';                // Nombre de usuario SMTP
+            $mail->Password   = '';        // Contraseña de aplicación SMTP
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;       // Habilitar cifrado TLS
+            $mail->Port       = 587;                                  // Puerto SMTP
+
+            // Destinatarios
+            $mail->setFrom('', 'Sistema CELO Fleet');
+            $mail->addAddress(self::$emailDestino);
+
+            // Adjuntar archivos de evidencias
+            if (!empty($evidenciasNombres)) {
+                foreach ($evidenciasNombres as $archivo) {
+                    $rutaArchivo = __DIR__ . '/../assets/uploads/' . $archivo;
+                    if (file_exists($rutaArchivo)) {
+                        $mail->addAttachment($rutaArchivo, $archivo);
+                    }
+                }
+            }
+
+            // Contenido
+            $mail->isHTML(true);
+            $mail->Subject = $asunto;
+            $mail->Body    = $mensajeHtml;
+            $mail->CharSet = 'UTF-8';
+
+            $mail->send();
+        } catch (Exception $e) {
+            error_log("Error de PHPMailer: " . $mail->ErrorInfo);
+        }
     }
 }

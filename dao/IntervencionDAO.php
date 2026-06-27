@@ -1,5 +1,5 @@
 <?php
-require_once 'Conexion.php';
+require_once '../config/Conexion.php';
 
 class IntervencionDAO {
     
