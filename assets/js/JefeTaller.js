@@ -292,6 +292,17 @@ async function comprimirImagen(file, maxSizeMB = 2) {
 async function ejecutarEnvioFormulario(e) {
     e.preventDefault();
     const form = e.target;
+
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    if (archivosSeleccionados.length === 0) {
+        alert("Debes adjuntar al menos una evidencia (Ticket/Foto).");
+        return;
+    }
+
     const btn = form.querySelector('button[type="submit"]');
     let textOriginal = "Registrar";
 
@@ -314,7 +325,14 @@ async function ejecutarEnvioFormulario(e) {
     }
 
     try {
-        await fetch("controllers/VehiculoController.php?accion=enviarATaller", { method: 'POST', body: data });
+        const response = await fetch("controllers/VehiculoController.php?accion=enviarATaller", { method: 'POST', body: data });
+        const result = await response.json();
+        
+        if (!response.ok || !result.success) {
+            alert("Error al registrar: " + (result.error || "Ocurrió un problema en el servidor."));
+            return;
+        }
+
         form.reset();
         archivosSeleccionados = [];
         actualizarPreview();

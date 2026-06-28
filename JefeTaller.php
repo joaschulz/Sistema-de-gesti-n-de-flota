@@ -91,14 +91,14 @@ Seguridad::protegerVista(['JefeTaller']); // Solo JefeTaller por ahora (MVP)
                 </div>
                 <div class="flex-1 flex flex-col gap-1.5">
                     <label class="text-sm font-bold text-gray-700">Costo Estimado ($)</label>
-                    <input type="number" id="costo" step="0.01" min="0" placeholder="0.00"
+                    <input type="number" id="costo" step="0.01" min="0" placeholder="0.00" required
                         class="w-full p-2.5 border border-black/10 rounded-xl text-sm bg-white outline-none">
                 </div>
             </div>
 
             <div class="flex flex-col gap-1.5">
                 <label class="text-sm font-bold text-gray-700">Detalle</label>
-                <textarea id="detalle" rows="4"
+                <textarea id="detalle" rows="4" required
                     class="w-full p-2.5 border border-black/10 rounded-xl text-sm bg-white"></textarea>
             </div>
 
@@ -128,7 +128,7 @@ Seguridad::protegerVista(['JefeTaller']); // Solo JefeTaller por ahora (MVP)
         </form>
     </dialog>
 
-    <script src="assets/js/JefeTaller.js"></script>
+    <script src="assets/js/JefeTaller.js?v=2"></script>
 </body>
 
 </html>

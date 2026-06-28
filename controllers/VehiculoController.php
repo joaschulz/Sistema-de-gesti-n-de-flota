@@ -63,6 +63,10 @@ try {
                 $tipo = $_POST['tipo'] ?? 'Correctivo';
                 $detalle = $_POST['detalle'] ?? '';
                 $costo = floatval($_POST['costo'] ?? 0);
+
+                if (empty($evidenciasStr)) {
+                    throw new Exception("Datos obligatorios incompletos (Falta adjuntar al menos una evidencia).");
+                }
             }
 
             if (empty($detalle)) {
