@@ -22,7 +22,13 @@ try {
 
             $userRecord = $dao->obtenerPorUsuario($usuario);
 
-            if ($userRecord && password_verify($password, $userRecord['password'])) {
+            if ($userRecord && password_verify($password, $userRecord['contrasena'])) {
+                if ($userRecord['estado'] !== 'Activo') {
+                    http_response_code(403);
+                    echo json_encode(['success' => false, 'error' => 'Tu cuenta se encuentra suspendida. Contacta a soporte IT.']);
+                    exit;
+                }
+
                 $rolActual = $userRecord['rol'];
 
                 // --- DICCIONARIO DE RUTAS (Abierto a la extensión) ---
@@ -40,9 +46,13 @@ try {
                     exit;
                 }
 
+                // Registrar último acceso en la base de datos
+                $dao->registrarAcceso($userRecord['ID_usuario']);
+
                 session_regenerate_id(true);
-                $_SESSION['usuario_id'] = $userRecord['id'];
+                $_SESSION['usuario_id'] = $userRecord['ID_usuario'];
                 $_SESSION['usuario_nombre'] = $userRecord['usuario'];
+                $_SESSION['usuario_nombre_completo'] = $userRecord['nombre'] . ' ' . $userRecord['apellido'];
                 $_SESSION['usuario_rol'] = $rolActual;
                 
                 // El servidor le dice al JS a dónde debe viajar
@@ -59,7 +69,7 @@ try {
             if (isset($_SESSION['usuario_id'])) {
                 echo json_encode([
                     'autenticado' => true,
-                    'usuario' => $_SESSION['usuario_nombre'],
+                    'usuario' => $_SESSION['usuario_nombre_completo'] ?? $_SESSION['usuario_nombre'],
                     'rol' => $_SESSION['usuario_rol']
                 ]);
             } else {

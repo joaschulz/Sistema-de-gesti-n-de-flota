@@ -24,18 +24,29 @@ try {
         case 'crear':
             $data = json_decode(file_get_contents('php://input'), true);
             $usuario = trim($data['usuario'] ?? '');
+            $nombre = trim($data['nombre'] ?? '');
+            $apellido = trim($data['apellido'] ?? '');
+            $legajo = trim($data['legajo'] ?? '');
             $password = $data['password'] ?? '';
             $rol = $data['rol'] ?? 'PersonalCampo';
 
-            if (empty($usuario) || empty($password)) {
-                echo json_encode(['success' => false, 'error' => 'Complete todos los campos.']);
+            if (empty($usuario) || empty($password) || empty($nombre) || empty($apellido) || empty($legajo)) {
+                echo json_encode(['success' => false, 'error' => 'Complete todos los campos obligatorios.']);
+                exit;
+            }
+            if (strlen($password) < 8) {
+                echo json_encode(['success' => false, 'error' => 'La contraseña debe tener al menos 8 caracteres.']);
                 exit;
             }
             if ($dao->obtenerPorUsuario($usuario)) {
                 echo json_encode(['success' => false, 'error' => 'El usuario ya existe.']);
                 exit;
             }
-            echo json_encode(['success' => $dao->crear($usuario, $password, $rol)]);
+            if ($dao->obtenerPorLegajo($legajo)) {
+                echo json_encode(['success' => false, 'error' => 'Ya existe un usuario con este legajo.']);
+                exit;
+            }
+            echo json_encode(['success' => $dao->crear($usuario, $nombre, $apellido, $legajo, $password, $rol)]);
             break;
 
         case 'modificarRol':
@@ -87,6 +98,10 @@ try {
 
             if (empty($nuevaPass)) {
                 echo json_encode(['success' => false, 'error' => 'La contraseña no puede estar vacía.']);
+                exit;
+            }
+            if (strlen($nuevaPass) < 8) {
+                echo json_encode(['success' => false, 'error' => 'La contraseña debe tener al menos 8 caracteres.']);
                 exit;
             }
             echo json_encode(['success' => $dao->resetearPassword($id, $nuevaPass)]);

@@ -112,7 +112,7 @@ async function cargarTablero() {
                     </div>
                     <footer class='bloque-botones flex flex-col gap-2'>
                         <button onclick="abrirModal('${v.patente}')" class='w-full bg-[#eff6ff] text-[#1d4ed8] py-2 rounded-lg text-sm font-bold cursor-pointer'>Registrar Intervencion</button>
-                        <button onclick="procesarAccion('${v.patente}', 'darDeAlta')" class='w-full bg-[#10b981] text-white py-2 rounded-lg text-sm font-bold cursor-pointer'>Dar de Alta</button>
+                        <button onclick="procesarAccion('${v.patente}', 'darDeAlta')" class='w-full bg-[#0f5c2e] text-white py-2 rounded-lg text-sm font-bold cursor-pointer hover:opacity-90 transition-opacity'>Dar de Alta</button>
                     </footer>`;
                 if (colTaller) colTaller.appendChild(tarjeta);
             }
@@ -292,12 +292,24 @@ async function comprimirImagen(file, maxSizeMB = 2) {
 async function ejecutarEnvioFormulario(e) {
     e.preventDefault();
     const form = e.target;
+
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    if (archivosSeleccionados.length === 0) {
+        alert("Debes adjuntar al menos una evidencia (Ticket/Foto).");
+        return;
+    }
+
     const btn = form.querySelector('button[type="submit"]');
     let textOriginal = "Registrar";
 
     if (btn) { textOriginal = btn.innerHTML; btn.innerHTML = "Subiendo..."; btn.disabled = true; }
 
     const tipo = document.getElementById('tipo')?.value || 'Correctivo';
+    const tipoFalla = document.getElementById('tipo_falla')?.value || '';
     const detalle = document.getElementById('detalle')?.value || '';
     const costo = document.getElementById('costo')?.value || 0;
     const modal = document.getElementById('modal-intervencion');
@@ -305,6 +317,7 @@ async function ejecutarEnvioFormulario(e) {
     const data = new FormData();
     data.append('patente', patenteSeleccionada);
     data.append('tipo', tipo);
+    data.append('tipo_falla', tipoFalla);
     data.append('detalle', detalle);
     data.append('costo', costo);
 
@@ -314,7 +327,14 @@ async function ejecutarEnvioFormulario(e) {
     }
 
     try {
-        await fetch("controllers/VehiculoController.php?accion=enviarATaller", { method: 'POST', body: data });
+        const response = await fetch("controllers/VehiculoController.php?accion=enviarATaller", { method: 'POST', body: data });
+        const result = await response.json();
+        
+        if (!response.ok || !result.success) {
+            alert("Error al registrar: " + (result.error || "Ocurrió un problema en el servidor."));
+            return;
+        }
+
         form.reset();
         archivosSeleccionados = [];
         actualizarPreview();

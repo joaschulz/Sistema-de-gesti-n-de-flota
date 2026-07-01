@@ -52,6 +52,8 @@ async function cargarUsuarios() {
 
             tr.innerHTML = `
                 <td class="p-4 font-semibold text-gray-800">${user.usuario}</td>
+                <td class="p-4 text-gray-600">${user.nombre} ${user.apellido}</td>
+                <td class="p-4 text-gray-600 font-medium">${user.legajo}</td>
                 <td class="p-4">${badgeRol}</td>
                 <td class="p-4">${badgeEstado}</td>
                 <td class="p-4 text-xs text-gray-500 font-medium">${accesoStr}</td>
@@ -148,13 +150,16 @@ async function ejecutarAltaUsuario(e) {
     errorDiv.classList.add("hidden");
 
     const usuario = document.getElementById("new-usuario").value.trim();
+    const nombre = document.getElementById("new-nombre").value.trim();
+    const apellido = document.getElementById("new-apellido").value.trim();
+    const legajo = document.getElementById("new-legajo").value.trim();
     const password = document.getElementById("new-password").value;
     const rol = document.getElementById("new-rol").value;
 
     const res = await fetch("controllers/UsuarioController.php?accion=crear", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usuario, password, rol })
+        body: JSON.stringify({ usuario, nombre, apellido, legajo, password, rol })
     });
     const data = await res.json();
     if (data.success) {

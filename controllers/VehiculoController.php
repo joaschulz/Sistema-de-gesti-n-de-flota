@@ -55,22 +55,31 @@ try {
                 // Si entra por el botón directo, el motivo ES la novedad de la base de datos
                 $detalle = !empty($novedadReal) ? $novedadReal : 'Inspección solicitada sin novedades previas';
                 $tipo = 'Preventivo';
+                $tipo_falla = 'Inspección General';
                 $costo = 0.00;
                 $evidenciasStr = '';
             } else {
                 // Si entra por el Modal, usa el texto y costo que el Jefe de Taller escribió
                 $evidenciasStr = procesarArchivosLocales($_FILES, $evidenciasNombres);
                 $tipo = $_POST['tipo'] ?? 'Correctivo';
+                $tipo_falla = $_POST['tipo_falla'] ?? 'Por definir';
                 $detalle = $_POST['detalle'] ?? '';
                 $costo = floatval($_POST['costo'] ?? 0);
+
+                if (empty($evidenciasNombres)) {
+                    throw new Exception("Datos obligatorios incompletos (Falta adjuntar al menos una evidencia).");
+                }
             }
 
             if (empty($detalle)) {
                 throw new Exception("Datos obligatorios incompletos (Falta detalle/motivo).");
             }
 
+            if (session_status() === PHP_SESSION_NONE) { session_start(); }
+            $idUsuario = $_SESSION['usuario_id'] ?? 1;
+
             // 4. Guardamos la intervención oficial en la BD
-            $exito = $dao->enviarATaller($patente, $tipo, $detalle, $costo, $evidenciasStr);
+            $exito = $dao->enviarATaller($patente, $tipo, $tipo_falla, $detalle, $costo, $evidenciasNombres, $idUsuario);
 
             // 5. EVENTOS EXTERNOS (Telegram / Email)
             if ($exito) {
@@ -82,7 +91,8 @@ try {
                     
                     // EMAIL (SMTP): Solo dispara si es un registro de INTERVENCIÓN (Viene del Modal / Formulario pesado)
                     if (!$esPeticionJson) {
-                        NotificacionService::enviarReporteEmail($patente, $tipo, $detalle, $costo, $evidenciasNombres);
+                        $usuarioNombre = $_SESSION['usuario_nombre_completo'] ?? 'Usuario Desconocido';
+                        NotificacionService::enviarReporteEmail($patente, $tipo, $tipo_falla, $detalle, $costo, $evidenciasNombres, $usuarioNombre);
                     }
                 } catch (Exception $e) {
                     // Si algo falla en la red externa, el servidor no colapsa

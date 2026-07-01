@@ -14,14 +14,17 @@ Seguridad::protegerVista(['PersonalIT']);
 <body class="bg-gray-50 text-gray-900 font-sans p-6">
 
     <main class="max-w-6xl mx-auto">
-        <header class="flex justify-between items-center mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-800">Panel de Control IT</h1>
-                <p class="text-sm text-gray-500">Administración Global de Usuarios y Roles de Acceso (RBAC)</p>
+        <header class="flex justify-between items-center mb-8 bg-[#0f5c2e] p-6 rounded-xl shadow-md border border-transparent">
+            <div class="flex items-center gap-4">
+                <img src="assets/img/logo.png" alt="CELO" class="h-12">
+                <div>
+                    <h1 class="text-2xl font-bold text-white">Panel de Control IT</h1>
+                    <p class="text-sm text-green-100">Administración Global de Usuarios y Roles de Acceso (RBAC)</p>
+                </div>
             </div>
             <div class="flex items-center gap-4">
-                <span id="nombre-usuario-display" class="text-sm font-medium text-gray-700"></span>
-                <button onclick="cerrarSesion()" class="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100 transition-colors">Cerrar Sesión</button>
+                <span id="nombre-usuario-display" class="text-sm font-medium text-white"></span>
+                <button onclick="cerrarSesion()" class="px-4 py-2 bg-white text-red-600 rounded-lg text-sm font-bold hover:bg-gray-100 transition-colors shadow-sm">Cerrar Sesión</button>
             </div>
         </header>
 
@@ -36,6 +39,8 @@ Seguridad::protegerVista(['PersonalIT']);
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
                             <th class="p-4">Usuario</th>
+                            <th class="p-4">Nombre Completo</th>
+                            <th class="p-4">Legajo</th>
                             <th class="p-4">Rol Asignado</th>
                             <th class="p-4">Estado</th>
                             <th class="p-4">Último Acceso</th>
@@ -61,8 +66,20 @@ Seguridad::protegerVista(['PersonalIT']);
                 <input type="text" id="new-usuario" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
             </div>
             <div>
+                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Nombre</label>
+                <input type="text" id="new-nombre" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Apellido</label>
+                <input type="text" id="new-apellido" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Legajo</label>
+                <input type="text" id="new-legajo" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+            </div>
+            <div>
                 <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Contraseña Inicial</label>
-                <input type="password" id="new-password" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                <input type="password" id="new-password" required minlength="8" placeholder="Mínimo 8 caracteres" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
             </div>
             <div>
                 <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Rol Operativo</label>
@@ -114,7 +131,7 @@ Seguridad::protegerVista(['PersonalIT']);
             <div>
                 <p class="text-sm text-gray-600 mb-3">Establecer una nueva clave credencial para: <b id="password-usuario" class="text-gray-800"></b></p>
                 <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Nueva Contraseña Temporal</label>
-                <input type="password" id="password-nueva" required placeholder="Mínimo 6 caracteres" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                <input type="password" id="password-nueva" required minlength="8" placeholder="Mínimo 8 caracteres" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
             </div>
             <footer class="flex justify-end gap-2 pt-4 border-t border-gray-100 mt-6">
                 <button type="button" onclick="cerrarDialogo('modal-password')" class="px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-lg font-medium">Cancelar</button>
@@ -172,6 +189,6 @@ Seguridad::protegerVista(['PersonalIT']);
         </form>
     </dialog>
 
-    <script src="assets/js/PanelIT.js"></script>
+    <script src="assets/js/PanelIT.js?v=1.1"></script>
 </body>
 </html>

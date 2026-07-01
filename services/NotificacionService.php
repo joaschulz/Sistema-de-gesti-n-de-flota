@@ -10,8 +10,8 @@ class NotificacionService {
     // ⚠️ COLOCÁ TU TOKEN REAL DE BOTFAHER ACÁ
     private static $telegramToken = ''; 
     
-    // ⚠️ COLOCÁ TU CHAT ID REAL DE RAWDATABOT ACÁ
-    private static $telegramChatId = '';
+    // ⚠️ COLOCÁ LOS CHAT IDs A LOS QUE QUIERAS NOTIFICAR (separados por coma)
+    private static $telegramChatIds = ['', '']; 
     
     private static $emailDestino = '';
 
@@ -26,32 +26,39 @@ class NotificacionService {
 
         $url = "https://api.telegram.org/bot" . self::$telegramToken . "/sendMessage";
         
-        $data = [
-            'chat_id' => self::$telegramChatId,
-            'text' => $mensaje,
-            'parse_mode' => 'Markdown'
-        ];
+        foreach (self::$telegramChatIds as $chatId) {
+            if (empty(trim($chatId)) || $chatId === 'ID_DEL_SEGUNDO_CHAT') continue;
 
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-        curl_exec($ch);
-        curl_close($ch);
+            $data = [
+                'chat_id' => $chatId,
+                'text' => $mensaje,
+                'parse_mode' => 'Markdown'
+            ];
+
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_exec($ch);
+            curl_close($ch);
+        }
     }
 
     /**
      * Envía el reporte técnico formal por correo
      */
-    public static function enviarReporteEmail($patente, $tipo, $detalle, $costo, $evidenciasNombres) {
+    public static function enviarReporteEmail($patente, $tipoMantenimiento, $tipoFalla, $detalle, $costo, $evidenciasNombres, $usuarioNombre) {
         $asunto = "NUEVA INTERVENCION REGISTRADA - Unidad " . $patente;
         
         $mensajeHtml = "<h2>Reporte de Taller - Flota CELO</h2>";
         $mensajeHtml .= "<p><strong>Patente:</strong> " . $patente . "</p>";
-        $mensajeHtml .= "<p><strong>Tipo de Mantenimiento:</strong> " . $tipo . "</p>";
+        $mensajeHtml .= "<p><strong>Tipo de Mantenimiento:</strong> " . $tipoMantenimiento . "</p>";
+        $mensajeHtml .= "<p><strong>Tipo de Falla:</strong> " . htmlspecialchars($tipoFalla, ENT_QUOTES, 'UTF-8') . "</p>";
         $mensajeHtml .= "<p><strong>Costo Estimado:</strong> $" . number_format($costo, 2) . "</p>";
         $mensajeHtml .= "<p><strong>Detalle Técnico:</strong> " . $detalle . "</p>";
+        $mensajeHtml .= "<p><strong>Registrado por:</strong> " . htmlspecialchars($usuarioNombre, ENT_QUOTES, 'UTF-8') . "</p>";
         
         if (!empty($evidenciasNombres)) {
             $mensajeHtml .= "<h3>Evidencias Adjuntas:</h3><ul>";
@@ -72,7 +79,7 @@ class NotificacionService {
             $mail->Username   = '';                // Nombre de usuario SMTP
             $mail->Password   = '';        // Contraseña de aplicación SMTP
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;       // Habilitar cifrado TLS
-            $mail->Port       = 587;                                  // Puerto SMTP
+            $mail->Port       = 587;                              // Puerto SMTP
 
             // Destinatarios
             $mail->setFrom('', 'Sistema CELO Fleet');
