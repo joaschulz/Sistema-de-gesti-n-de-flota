@@ -3,70 +3,107 @@ DROP DATABASE IF EXISTS celo_fleet;
 CREATE DATABASE celo_fleet CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE celo_fleet;
 
--- 2. TABLA: USUARIOS (Control de Acceso y RBAC)
-CREATE TABLE usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario VARCHAR(50) NOT NULL UNIQUE,
-    nombre VARCHAR(100) NOT NULL,
-    apellido VARCHAR(100) NOT NULL,
-    legajo VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    rol ENUM('JefeTaller', 'PersonalCampo', 'Admin', 'PersonalIT') NOT NULL DEFAULT 'PersonalCampo',
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- 2. TABLA: ROL
+CREATE TABLE ROL (
+  ID_rol INT AUTO_INCREMENT NOT NULL,
+  nombre_rol VARCHAR(50) NOT NULL,
+  permisos TEXT NOT NULL,
+  PRIMARY KEY (ID_rol)
 );
 
--- 3. TABLA PRINCIPAL: VEHÍCULOS
-CREATE TABLE vehiculos (
-    patente VARCHAR(15) PRIMARY KEY,
-    marca VARCHAR(50) NOT NULL,
-    modelo VARCHAR(50) NOT NULL,
-    kilometraje INT NOT NULL DEFAULT 0,
-    estado ENUM('Operativo', 'Alerta', 'Taller') NOT NULL DEFAULT 'Operativo',
-    novedades TEXT NULL DEFAULT NULL,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+-- 3. TABLA: VEHICULO
+CREATE TABLE VEHICULO (
+  patente VARCHAR(15) NOT NULL,
+  marca VARCHAR(50) NOT NULL,
+  modelo VARCHAR(50) NOT NULL,
+  estado ENUM('Operativo', 'Alerta', 'Taller') NOT NULL DEFAULT 'Operativo',
+  kilometraje INT NOT NULL DEFAULT 0,
+  novedades TEXT NULL DEFAULT NULL,
+  PRIMARY KEY (patente)
 );
 
--- 4. TABLA DE HISTORIAL: INTERVENCIONES
-CREATE TABLE intervenciones (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    patente_vehiculo VARCHAR(15) NOT NULL,
-    tipo VARCHAR(50) NOT NULL DEFAULT 'Correctivo', -- Ej: Preventivo, Correctivo, Siniestro
-    costo DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
-    detalle TEXT NOT NULL,
-    evidencias TEXT NULL, -- Guardará el string de nombres de archivo separados por comas
-    fecha_ingreso TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    CONSTRAINT fk_vehiculo_intervencion 
-        FOREIGN KEY (patente_vehiculo) 
-        REFERENCES vehiculos(patente) 
-        ON UPDATE CASCADE 
-        ON DELETE RESTRICT
+-- 4. TABLA: USUARIO
+CREATE TABLE USUARIO (
+  ID_usuario INT AUTO_INCREMENT NOT NULL,
+  usuario VARCHAR(50) NOT NULL UNIQUE,
+  legajo INT NOT NULL UNIQUE,
+  nombre VARCHAR(50) NOT NULL,
+  apellido VARCHAR(50) NOT NULL,
+  contrasena VARCHAR(255) NOT NULL,
+  estado ENUM('Activo', 'Suspendido') NOT NULL DEFAULT 'Activo',
+  fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ultimo_acceso DATETIME NULL DEFAULT NULL,
+  ID_rol INT NOT NULL,
+  PRIMARY KEY (ID_usuario),
+  FOREIGN KEY (ID_rol) REFERENCES ROL(ID_rol)
 );
+
+-- 5. TABLA: INTERVENCION_TECNICA
+CREATE TABLE INTERVENCION_TECNICA (
+  ID_intervencion INT AUTO_INCREMENT NOT NULL,
+  fecha_inicio DATETIME NOT NULL,
+  costo DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  fecha_fin DATETIME NULL,
+  tipo_falla VARCHAR(100) NOT NULL,
+  detalles TEXT NOT NULL,
+  ID_usuario INT NOT NULL,
+  patente VARCHAR(15) NOT NULL,
+  PRIMARY KEY (ID_intervencion),
+  FOREIGN KEY (ID_usuario) REFERENCES USUARIO(ID_usuario),
+  FOREIGN KEY (patente) REFERENCES VEHICULO(patente)
+);
+
+-- 6. TABLA: EVIDENCIA_DIGITAL
+CREATE TABLE EVIDENCIA_DIGITAL (
+  ID_evidencia INT AUTO_INCREMENT NOT NULL,
+  url_archivo VARCHAR(255) NOT NULL,
+  tipo_archivo VARCHAR(50) NOT NULL,
+  ID_intervencion INT NULL,
+  ID_carga INT NULL,
+  PRIMARY KEY (ID_evidencia),
+  FOREIGN KEY (ID_intervencion) REFERENCES INTERVENCION_TECNICA(ID_intervencion)
+  -- Descomentar las siguientes líneas cuando se creen las tablas respectivas:
+  -- FOREIGN KEY (ID_reporte) REFERENCES REPORTE_NOVEDAD(ID_reporte),
+  -- FOREIGN KEY (ID_carga) REFERENCES CARGA_COMBUSTIBLE(ID_carga)
+);
+
 
 -- ==========================================
--- DATOS DE PRUEBA INICIALES
+-- DATOS DE PRUEBA INICIALES (MOCKS)
 -- ==========================================
 
--- Usuarios de prueba. La contraseña para todos es: password123
-INSERT INTO usuarios (usuario, nombre, apellido, legajo, password, rol) VALUES 
-('chofer_juan', 'Juan', 'Perez', 'L-1001', '$2y$10$N2V9Q4V3wVdYx.s720P9HObVXX4TXYn4P/b.2Z8L2o9910H1r3G6O', 'PersonalCampo'),
-('jefe_pedro', 'Pedro', 'Gomez', 'L-2001', '$2y$10$N2V9Q4V3wVdYx.s720P9HObVXX4TXYn4P/b.2Z8L2o9910H1r3G6O', 'JefeTaller'),
-('admin_celo', 'Carlos', 'Lopez', 'L-3001', '$2y$10$N2V9Q4V3wVdYx.s720P9HObVXX4TXYn4P/b.2Z8L2o9910H1r3G6O', 'Admin'),
-('it_soporte', 'Ana', 'Martinez', 'L-9001', '$2y$10$N2V9Q4V3wVdYx.s720P9HObVXX4TXYn4P/b.2Z8L2o9910H1r3G6O', 'PersonalIT');
+-- Roles
+INSERT INTO ROL (nombre_rol, permisos) VALUES 
+('JefeTaller', 'ALL_MAINTENANCE'),
+('Chofer', 'READ_VEHICLES, WRITE_REPORTS'),
+('Admin', 'ALL_SYSTEM'),
+('PersonalIT', 'SYSTEM_SUPPORT');
 
-INSERT INTO vehiculos (patente, marca, modelo, kilometraje, estado, novedades) VALUES 
-('AB123CD', 'Toyota', 'Hilux 2.4 TDI', 45000, 'Operativo', NULL),
-('EF456GH', 'Ford', 'Ranger XLT', 125000, 'Operativo', NULL),
-('IJ789KL', 'Volkswagen', 'Amarok V6', 89000, 'Alerta', 'Ruido extraño en la suspensión delantera al girar'),
-('MN012OP', 'Chevrolet', 'S10 High Country', 210000, 'Alerta', 'Testigo de check engine encendido'),
-('QR345ST', 'Renault', 'Alaskan', 32000, 'Taller', 'Cambio de correa de distribución pendiente');
+-- Vehículos
+INSERT INTO VEHICULO (patente, marca, modelo, estado) VALUES 
+('AA001BB', 'Ford', 'Ranger XL 2.2', 'Operativo'),
+('AC222DD', 'Chevrolet', 'S10 LS', 'Alerta'),
+('AE333FF', 'Mercedes-Benz', 'Sprinter 311 CDI', 'Operativo'),
+('AG444HH', 'Toyota', 'Hilux SW4', 'Taller'),
+('OQ555PP', 'Peugeot', 'Partner Furgón', 'Operativo'),
+('AF666ZZ', 'Volkswagen', 'Saveiro Cabina Simple', 'Alerta'),
+('AD777XX', 'Fiat', 'Fiorino', 'Operativo'),
+('AB888YY', 'Ford', 'Transit Furgón Largo', 'Taller'),
+('AA999WW', 'Renault', 'Kangoo Express', 'Operativo'),
+('AE111QQ', 'Toyota', 'Hiace Furgón', 'Operativo');
 
--- 1. Alteración de la estructura física del modelo para soportar auditoría y control de estados
-ALTER TABLE usuarios 
-ADD COLUMN estado ENUM('Activo', 'Suspendido') NOT NULL DEFAULT 'Activo',
-ADD COLUMN ultimo_acceso DATETIME NULL DEFAULT NULL;
+-- Usuarios
+INSERT INTO USUARIO (usuario, legajo, nombre, apellido, contrasena, estado, ID_rol) VALUES 
+('jefe_pedro', 1001, 'Pedro', 'Gómez', '$2y$10$N2V9Q4V3wVdYx.s720P9HObVXX4TXYn4P/b.2Z8L2o9910H1r3G6O', 'Activo', 1), -- JefeTaller
+('chofer_juan', 1002, 'Juan', 'Pérez', '$2y$10$N2V9Q4V3wVdYx.s720P9HObVXX4TXYn4P/b.2Z8L2o9910H1r3G6O', 'Activo', 2), -- Chofer
+('admin_celo', 1003, 'Ana', 'López', '$2y$10$N2V9Q4V3wVdYx.s720P9HObVXX4TXYn4P/b.2Z8L2o9910H1r3G6O', 'Activo', 3), -- Admin
+('it_soporte', 1004, 'Laura', 'Martinez', '$2y$10$N2V9Q4V3wVdYx.s720P9HObVXX4TXYn4P/b.2Z8L2o9910H1r3G6O', 'Activo', 4); -- IT
 
--- 2. Sincronización de los usuarios de prueba para garantizar consistencia en la grilla
-UPDATE usuarios SET ultimo_acceso = NOW() WHERE usuario = 'it_soporte';
-UPDATE usuarios SET ultimo_acceso = '2026-06-25 18:34:12' WHERE usuario = 'jefe_pedro';
-UPDATE usuarios SET ultimo_acceso = '2026-06-26 09:15:00' WHERE usuario = 'chofer_juan';
+-- Intervenciones Técnicas
+INSERT INTO INTERVENCION_TECNICA (fecha_inicio, costo, fecha_fin, tipo_falla, detalles, ID_usuario, patente) VALUES 
+('2026-06-25 08:30:00', 45000.50, '2026-06-25 14:00:00', 'Mecánica - Frenos', 'Cambio de pastillas de freno delanteras', 1, 'QR345ST');
+
+-- Evidencia Digital
+INSERT INTO EVIDENCIA_DIGITAL (url_archivo, tipo_archivo, ID_intervencion) VALUES 
+('assets/uploads/factura_frenos_001.jpg', 'image/jpeg', 1),
+('assets/uploads/foto_reparacion_qr345st.png', 'image/png', 1);

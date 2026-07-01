@@ -64,7 +64,7 @@ try {
                 $detalle = $_POST['detalle'] ?? '';
                 $costo = floatval($_POST['costo'] ?? 0);
 
-                if (empty($evidenciasStr)) {
+                if (empty($evidenciasNombres)) {
                     throw new Exception("Datos obligatorios incompletos (Falta adjuntar al menos una evidencia).");
                 }
             }
@@ -73,8 +73,11 @@ try {
                 throw new Exception("Datos obligatorios incompletos (Falta detalle/motivo).");
             }
 
+            if (session_status() === PHP_SESSION_NONE) { session_start(); }
+            $idUsuario = $_SESSION['usuario_id'] ?? 1;
+
             // 4. Guardamos la intervención oficial en la BD
-            $exito = $dao->enviarATaller($patente, $tipo, $detalle, $costo, $evidenciasStr);
+            $exito = $dao->enviarATaller($patente, $tipo, $detalle, $costo, $evidenciasNombres, $idUsuario);
 
             // 5. EVENTOS EXTERNOS (Telegram / Email)
             if ($exito) {

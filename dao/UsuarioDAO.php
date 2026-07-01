@@ -6,7 +6,7 @@ class UsuarioDAO {
     public function obtenerPorUsuario($nombreUsuario) {
         try {
             $pdo = Conexion::conectar();
-            $stmt = $pdo->prepare("SELECT id, usuario, nombre, apellido, password, rol, estado FROM usuarios WHERE usuario = :usuario");
+            $stmt = $pdo->prepare("SELECT u.ID_usuario, u.usuario, u.nombre, u.apellido, u.contrasena, r.nombre_rol as rol, u.estado FROM USUARIO u JOIN ROL r ON u.ID_rol = r.ID_rol WHERE u.usuario = :usuario");
             $stmt->execute([':usuario' => $nombreUsuario]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
@@ -18,7 +18,7 @@ class UsuarioDAO {
     public function obtenerPorLegajo($legajo) {
         try {
             $pdo = Conexion::conectar();
-            $stmt = $pdo->prepare("SELECT id FROM usuarios WHERE legajo = :legajo");
+            $stmt = $pdo->prepare("SELECT ID_usuario FROM USUARIO WHERE legajo = :legajo");
             $stmt->execute([':legajo' => $legajo]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
@@ -30,7 +30,7 @@ class UsuarioDAO {
     public function obtenerPorId($id) {
         try {
             $pdo = Conexion::conectar();
-            $stmt = $pdo->prepare("SELECT id, usuario, rol, estado FROM usuarios WHERE id = :id");
+            $stmt = $pdo->prepare("SELECT u.ID_usuario, u.usuario, r.nombre_rol as rol, u.estado FROM USUARIO u JOIN ROL r ON u.ID_rol = r.ID_rol WHERE u.ID_usuario = :id");
             $stmt->execute([':id' => $id]);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
@@ -41,7 +41,7 @@ class UsuarioDAO {
     public function contarPorRol($rol) {
         try {
             $pdo = Conexion::conectar();
-            $stmt = $pdo->prepare("SELECT COUNT(*) FROM usuarios WHERE rol = :rol AND estado = 'Activo'");
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM USUARIO u JOIN ROL r ON u.ID_rol = r.ID_rol WHERE r.nombre_rol = :rol AND u.estado = 'Activo'");
             $stmt->execute([':rol' => $rol]);
             return $stmt->fetchColumn();
         } catch (PDOException $e) {
@@ -53,7 +53,7 @@ class UsuarioDAO {
     public function obtenerTodos() {
         try {
             $pdo = Conexion::conectar();
-            $stmt = $pdo->query("SELECT id, usuario, nombre, apellido, legajo, rol, estado, ultimo_acceso, fecha_creacion FROM usuarios ORDER BY id ASC");
+            $stmt = $pdo->query("SELECT u.ID_usuario as id, u.usuario, u.nombre, u.apellido, u.legajo, r.nombre_rol as rol, u.estado, u.ultimo_acceso, u.fecha_creacion FROM USUARIO u JOIN ROL r ON u.ID_rol = r.ID_rol ORDER BY u.ID_usuario ASC");
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             return [];
@@ -64,13 +64,13 @@ class UsuarioDAO {
         try {
             $pdo = Conexion::conectar();
             $hash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO usuarios (usuario, nombre, apellido, legajo, password, rol, estado) VALUES (:usuario, :nombre, :apellido, :legajo, :password, :rol, 'Activo')");
+            $stmt = $pdo->prepare("INSERT INTO USUARIO (usuario, nombre, apellido, legajo, contrasena, ID_rol, estado) VALUES (:usuario, :nombre, :apellido, :legajo, :contrasena, (SELECT ID_rol FROM ROL WHERE nombre_rol = :rol), 'Activo')");
             return $stmt->execute([
                 ':usuario' => $usuario, 
                 ':nombre' => $nombre, 
                 ':apellido' => $apellido, 
                 ':legajo' => $legajo, 
-                ':password' => $hash, 
+                ':contrasena' => $hash, 
                 ':rol' => $rol
             ]);
         } catch (PDOException $e) {
@@ -81,7 +81,7 @@ class UsuarioDAO {
     public function actualizarRol($id, $nuevoRol) {
         try {
             $pdo = Conexion::conectar();
-            $stmt = $pdo->prepare("UPDATE usuarios SET rol = :rol WHERE id = :id");
+            $stmt = $pdo->prepare("UPDATE USUARIO SET ID_rol = (SELECT ID_rol FROM ROL WHERE nombre_rol = :rol) WHERE ID_usuario = :id");
             return $stmt->execute([':rol' => $nuevoRol, ':id' => $id]);
         } catch (PDOException $e) {
             return false;
@@ -91,7 +91,7 @@ class UsuarioDAO {
     public function actualizarEstado($id, $nuevoEstado) {
         try {
             $pdo = Conexion::conectar();
-            $stmt = $pdo->prepare("UPDATE usuarios SET estado = :estado WHERE id = :id");
+            $stmt = $pdo->prepare("UPDATE USUARIO SET estado = :estado WHERE ID_usuario = :id");
             return $stmt->execute([':estado' => $nuevoEstado, ':id' => $id]);
         } catch (PDOException $e) {
             return false;
@@ -102,8 +102,8 @@ class UsuarioDAO {
         try {
             $pdo = Conexion::conectar();
             $hash = password_hash($nuevaPassword, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("UPDATE usuarios SET password = :password WHERE id = :id");
-            return $stmt->execute([':password' => $hash, ':id' => $id]);
+            $stmt = $pdo->prepare("UPDATE USUARIO SET contrasena = :contrasena WHERE ID_usuario = :id");
+            return $stmt->execute([':contrasena' => $hash, ':id' => $id]);
         } catch (PDOException $e) {
             return false;
         }
@@ -112,7 +112,7 @@ class UsuarioDAO {
     public function eliminar($id) {
         try {
             $pdo = Conexion::conectar();
-            $stmt = $pdo->prepare("DELETE FROM usuarios WHERE id = :id");
+            $stmt = $pdo->prepare("DELETE FROM USUARIO WHERE ID_usuario = :id");
             return $stmt->execute([':id' => $id]);
         } catch (PDOException $e) {
             return false;
@@ -122,7 +122,7 @@ class UsuarioDAO {
     public function registrarAcceso($id) {
         try {
             $pdo = Conexion::conectar();
-            $stmt = $pdo->prepare("UPDATE usuarios SET ultimo_acceso = NOW() WHERE id = :id");
+            $stmt = $pdo->prepare("UPDATE USUARIO SET ultimo_acceso = NOW() WHERE ID_usuario = :id");
             return $stmt->execute([':id' => $id]);
         } catch (PDOException $e) {
             return false;

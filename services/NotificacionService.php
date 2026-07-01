@@ -8,12 +8,12 @@ require_once __DIR__ . '/../vendor/src/SMTP.php';
 class NotificacionService {
     
     // ⚠️ COLOCÁ TU TOKEN REAL DE BOTFAHER ACÁ
-    private static $telegramToken = ''; 
+    private static $telegramToken = '8665571046:AAEA9zle8aT3Seu9wZQxfmmUblEon72aXcE'; 
     
-    // ⚠️ COLOCÁ TU CHAT ID REAL DE RAWDATABOT ACÁ
-    private static $telegramChatId = '';
+    // ⚠️ COLOCÁ LOS CHAT IDs A LOS QUE QUIERAS NOTIFICAR (separados por coma)
+    private static $telegramChatIds = ['993520105', '1144065937']; 
     
-    private static $emailDestino = '';
+    private static $emailDestino = 'gestionflotacelo@gmail.com';
 
     /**
      * Envía notificaciones estrictas de transición de estado
@@ -26,19 +26,24 @@ class NotificacionService {
 
         $url = "https://api.telegram.org/bot" . self::$telegramToken . "/sendMessage";
         
-        $data = [
-            'chat_id' => self::$telegramChatId,
-            'text' => $mensaje,
-            'parse_mode' => 'Markdown'
-        ];
+        foreach (self::$telegramChatIds as $chatId) {
+            if (empty(trim($chatId)) || $chatId === 'ID_DEL_SEGUNDO_CHAT') continue;
 
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-        curl_exec($ch);
-        curl_close($ch);
+            $data = [
+                'chat_id' => $chatId,
+                'text' => $mensaje,
+                'parse_mode' => 'Markdown'
+            ];
+
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_exec($ch);
+            curl_close($ch);
+        }
     }
 
     /**
@@ -69,13 +74,13 @@ class NotificacionService {
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';                     // Servidor SMTP (ej: smtp.gmail.com)
             $mail->SMTPAuth   = true;                                 // Habilitar autenticación SMTP
-            $mail->Username   = '';                // Nombre de usuario SMTP
-            $mail->Password   = '';        // Contraseña de aplicación SMTP
+            $mail->Username   = 'gestionflotacelo@gmail.com';                // Nombre de usuario SMTP
+            $mail->Password   = 'uesv sdwd smlv htpf';        // Contraseña de aplicación SMTP
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;       // Habilitar cifrado TLS
-            $mail->Port       = 587;                                  // Puerto SMTP
+            $mail->Port       = 587;                              // Puerto SMTP
 
             // Destinatarios
-            $mail->setFrom('', 'Sistema CELO Fleet');
+            $mail->setFrom('gestionflotacelo@gmail.com', 'Sistema CELO Fleet');
             $mail->addAddress(self::$emailDestino);
 
             // Adjuntar archivos de evidencias
