@@ -112,7 +112,7 @@ async function cargarTablero() {
                     </div>
                     <footer class='bloque-botones flex flex-col gap-2'>
                         <button onclick="abrirModal('${v.patente}')" class='w-full bg-[#eff6ff] text-[#1d4ed8] py-2 rounded-lg text-sm font-bold cursor-pointer'>Registrar Intervencion</button>
-                        <button onclick="procesarAccion('${v.patente}', 'darDeAlta')" class='w-full bg-[#10b981] text-white py-2 rounded-lg text-sm font-bold cursor-pointer'>Dar de Alta</button>
+                        <button onclick="procesarAccion('${v.patente}', 'darDeAlta')" class='w-full bg-[#0f5c2e] text-white py-2 rounded-lg text-sm font-bold cursor-pointer hover:opacity-90 transition-opacity'>Dar de Alta</button>
                     </footer>`;
                 if (colTaller) colTaller.appendChild(tarjeta);
             }

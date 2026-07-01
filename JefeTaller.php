@@ -21,13 +21,16 @@ Seguridad::protegerVista(['JefeTaller']); // Solo JefeTaller por ahora (MVP)
 <body class="bg-[#f9fafb] text-[--foreground] p-6">
 
     <main class="max-w-[1300px] mx-auto">
-        <header class="flex justify-between items-center mb-8">
-            <h1 class="text-2xl font-bold text-gray-900">Gestion de Mantenimientos</h1>
+        <header class="flex justify-between items-center mb-8 bg-[#0f5c2e] p-6 rounded-xl shadow-md border border-transparent">
+            <div class="flex items-center gap-4">
+                <img src="assets/img/logo.png" alt="CELO" class="h-12">
+                <h1 class="text-2xl font-bold text-white">Gestion de Mantenimientos</h1>
+            </div>
 
             <div class="flex items-center gap-4">
-                <span id="nombre-usuario-display" class="text-sm font-medium text-gray-700"></span>
+                <span id="nombre-usuario-display" class="text-sm font-medium text-white"></span>
                 <button id="btn-logout"
-                    class="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100 transition-colors">Cerrar
+                    class="px-4 py-2 bg-white text-red-600 rounded-lg text-sm font-bold hover:bg-gray-100 transition-colors shadow-sm">Cerrar
                     Sesión</button>
             </div>
         </header>
@@ -128,7 +131,7 @@ Seguridad::protegerVista(['JefeTaller']); // Solo JefeTaller por ahora (MVP)
         </form>
     </dialog>
 
-    <script src="assets/js/JefeTaller.js?v=2"></script>
+    <script src="assets/js/JefeTaller.js?v=3"></script>
 </body>
 
 </html>

@@ -14,14 +14,17 @@ Seguridad::protegerVista(['PersonalIT']);
 <body class="bg-gray-50 text-gray-900 font-sans p-6">
 
     <main class="max-w-6xl mx-auto">
-        <header class="flex justify-between items-center mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-800">Panel de Control IT</h1>
-                <p class="text-sm text-gray-500">Administración Global de Usuarios y Roles de Acceso (RBAC)</p>
+        <header class="flex justify-between items-center mb-8 bg-[#0f5c2e] p-6 rounded-xl shadow-md border border-transparent">
+            <div class="flex items-center gap-4">
+                <img src="assets/img/logo.png" alt="CELO" class="h-12">
+                <div>
+                    <h1 class="text-2xl font-bold text-white">Panel de Control IT</h1>
+                    <p class="text-sm text-green-100">Administración Global de Usuarios y Roles de Acceso (RBAC)</p>
+                </div>
             </div>
             <div class="flex items-center gap-4">
-                <span id="nombre-usuario-display" class="text-sm font-medium text-gray-700"></span>
-                <button onclick="cerrarSesion()" class="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold hover:bg-red-100 transition-colors">Cerrar Sesión</button>
+                <span id="nombre-usuario-display" class="text-sm font-medium text-white"></span>
+                <button onclick="cerrarSesion()" class="px-4 py-2 bg-white text-red-600 rounded-lg text-sm font-bold hover:bg-gray-100 transition-colors shadow-sm">Cerrar Sesión</button>
             </div>
         </header>
 
