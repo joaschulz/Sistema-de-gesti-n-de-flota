@@ -8,12 +8,12 @@ require_once __DIR__ . '/../vendor/src/SMTP.php';
 class NotificacionService {
     
     // ⚠️ COLOCÁ TU TOKEN REAL DE BOTFAHER ACÁ
-    private static $telegramToken = '8665571046:AAEA9zle8aT3Seu9wZQxfmmUblEon72aXcE'; 
+    private static $telegramToken = ''; 
     
     // ⚠️ COLOCÁ LOS CHAT IDs A LOS QUE QUIERAS NOTIFICAR (separados por coma)
-    private static $telegramChatIds = ['993520105', '1144065937']; 
+    private static $telegramChatIds = ['', '']; 
     
-    private static $emailDestino = 'gestionflotacelo@gmail.com';
+    private static $emailDestino = '';
 
     /**
      * Envía notificaciones estrictas de transición de estado
@@ -74,13 +74,13 @@ class NotificacionService {
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';                     // Servidor SMTP (ej: smtp.gmail.com)
             $mail->SMTPAuth   = true;                                 // Habilitar autenticación SMTP
-            $mail->Username   = 'gestionflotacelo@gmail.com';                // Nombre de usuario SMTP
-            $mail->Password   = 'uesv sdwd smlv htpf';        // Contraseña de aplicación SMTP
+            $mail->Username   = '';                // Nombre de usuario SMTP
+            $mail->Password   = '';        // Contraseña de aplicación SMTP
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;       // Habilitar cifrado TLS
             $mail->Port       = 587;                              // Puerto SMTP
 
             // Destinatarios
-            $mail->setFrom('gestionflotacelo@gmail.com', 'Sistema CELO Fleet');
+            $mail->setFrom('', 'Sistema CELO Fleet');
             $mail->addAddress(self::$emailDestino);
 
             // Adjuntar archivos de evidencias
