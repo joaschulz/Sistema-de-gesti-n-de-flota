@@ -23,7 +23,7 @@ CELO Fleet es un sistema integral basado en web desarrollado para la gestión, m
   - `Conexion.php`: Singleton para conectar con la base de datos vía PDO de forma segura.
   - `Seguridad.php`: Configuraciones o validaciones de sesión.
 - `controllers/`
-  - `LoginController.php`: Valida las credenciales (Legajo/Contraseña), gestiona la sesión e intercepta inicios de sesión no autorizados o suspendidos.
+  - `LoginController.php`: Valida las credenciales (Usuario/Contraseña), gestiona la sesión e intercepta inicios de sesión no autorizados o suspendidos.
   - `UsuarioController.php`: Expone la API para el Panel IT (ABM de usuarios).
   - `VehiculoController.php`: Coordina el registro de intervenciones, guardado de evidencias, y dispara los eventos de notificación.
 - `dao/` (Data Access Objects)
